@@ -1,3 +1,10 @@
+/**
+ * Akaila Brown
+ * Prof. Posnett
+ * CSC 139
+ * Mar 25, 2025
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -91,7 +98,7 @@ void print_node_details(Node* node, const char* message) {
         return;
     }
     printf("%s: Node size=%zuK, offset=%zuK, is_split=%d, is_free=%d\n",
-           message, node->size / 1024, node->mempool_offset / 1024, node->is_split, node->is_free);
+        message, node->size / 1024, node->mempool_offset / 1024, node->is_split, node->is_free);
 }
 
 /**
@@ -191,7 +198,15 @@ void print_tree(Node* node, int depth) {
  * @return A pointer to the newly created node.
  */
 Node* create_node(size_t size, size_t mempool_offset, Node* parent) {
-    // todo
+    Node* node = (Node *)((char*)(malloc(size)) + mempool_offset);
+    node -> parent = parent;
+    node -> is_free = true;
+    node -> is_split = false;
+    node -> left = NULL;
+    node -> right = NULL;
+    node -> size = size;
+    node -> mempool_offset = mempool_offset;
+
     return node;
 }
 
@@ -234,6 +249,9 @@ Node* create_node(size_t size, size_t mempool_offset, Node* parent) {
  */
 BuddyAllocator* create_allocator() {
     // todo
+    BuddyAllocator* allocator = malloc(TOTAL_MEMORY);
+    allocator -> root = create_node(TOTAL_MEMORY, 0, NULL);
+    return allocator;
 }
 
 /**
@@ -276,7 +294,13 @@ BuddyAllocator* create_allocator() {
  */
 void split(Node* node) {
     //todo
- }
+    if (!node->is_split && node->size > MIN_BLOCK_SIZE){
+        node->left = create_node(node->size/2, node->mempool_offset, node);
+        node->right = create_node(node->size/2, node->mempool_offset + (node->size/2), node);
+        node->is_split = true;
+        node->is_free = false;
+    }
+}
 
 
 /**
@@ -522,6 +546,7 @@ void destroy_tree(Node* node) {
 // Main function for testing
 int main() {
     BuddyAllocator* allocator = create_allocator();
+    print_node_details(allocator->root, "Root details: ");
 
     printf("\nInitial Tree\n");
     print_tree(allocator->root, 0);
