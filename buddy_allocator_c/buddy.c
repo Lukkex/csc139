@@ -593,7 +593,7 @@ void destroy_tree(Node* node) {
     destroy_tree(node -> left);
     destroy_tree(node -> right);
 
-    free_recursive(node);
+    free(node);
 }
 
 /**
@@ -616,7 +616,7 @@ void destroy_tree(Node* node) {
  void destroy_allocator(BuddyAllocator* allocator) {
     //todo
     destroy_tree(allocator -> root);
-    allocator -> root -> is_free = true;
+    free(allocator);
 }
 
 // do not remove this line, your main will not be used when this is set
@@ -637,6 +637,10 @@ int main() {
     printf("\nAllocating 4KB\n");
     void* block4 = allocate(allocator, 4 * 1024);
     print_tree(allocator -> root, 0);
+
+    printf("\nFreeing 4KB\n");
+    deallocate(allocator, block4);
+    print_tree(allocator -> root, 0);
     
     printf("\nAllocating 8KB\n");
     void* block5 = allocate(allocator, 8 * 1024);
@@ -647,11 +651,12 @@ int main() {
     void* block1 = allocate(allocator, 16 * 1024);
     print_tree(allocator -> root, 0);
 
+    /*
     printf("\nAllocating 64KB\n");
     printf("2");
     for (int i = 0; i < 12; i++){
         void* block3 = allocate(allocator, 64 * 1024);
-    }
+    }*/
 
     printf("\nAllocating 4KB\n");
     void* block6 = allocate(allocator, 4 * 1024);
@@ -666,9 +671,6 @@ int main() {
     print_tree(allocator -> root, 0);
 
     destroy_allocator(allocator);
-    
-    print_node_details(allocator -> root, "Root details: ");
-    print_tree(allocator -> root, 0);
     return 0;
 }
 
