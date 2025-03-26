@@ -354,16 +354,16 @@ void split(Node* node) {
  *   - **Allocating less than `MIN_BLOCK_SIZE`** may require rounding up.
  *   - **Handling multiple allocations in sequence** should still leave space for future allocations.
  */
-Node* allocate_recursive(Node* node, size_t size, int level) {
+Node* allocate_recursive(Node* node, size_t size) {
     // todo
 
-    if (level > MAX_LEVELS || node -> size < size || node == NULL || node -> is_free == false)
+    if (node -> size < size || node == NULL || node -> is_free == false)
         return NULL;
 
     if (node -> size > size && node -> is_split == false)
         split(node);
 
-    if (node -> is_free == true && node -> size == size){
+    if (node -> is_free == true && node -> is_split == false && node -> size == size){
         node -> is_free = false;
         return node;
     }
@@ -371,11 +371,11 @@ Node* allocate_recursive(Node* node, size_t size, int level) {
     Node* left;
     Node* right;
 
-    left = allocate_recursive(node -> left, size, level + 1);
+    left = allocate_recursive(node -> left, size);
 
     if (left != NULL) return left;
 
-    right = allocate_recursive(node -> right, size, level + 1);
+    right = allocate_recursive(node -> right, size);
 
     if (right != NULL) return right;
 
@@ -417,7 +417,7 @@ Node* allocate_recursive(Node* node, size_t size, int level) {
     if (size < MIN_BLOCK_SIZE) size = MIN_BLOCK_SIZE;
     if (size > TOTAL_MEMORY) return NULL;
 
-    Node* node = allocate_recursive(allocator -> root, size, 0);
+    Node* node = allocate_recursive(allocator -> root, size);
 
     if (node == NULL) 
         return NULL;
@@ -634,6 +634,14 @@ int main() {
     printf("\nInitial Tree\n");
     print_tree(allocator -> root, 0);
 
+    printf("\nAllocating 4KB\n");
+    void* block4 = allocate(allocator, 4 * 1024);
+    print_tree(allocator -> root, 0);
+    
+    printf("\nAllocating 8KB\n");
+    void* block5 = allocate(allocator, 8 * 1024);
+    print_tree(allocator -> root, 0);
+
     printf("1");
     printf("\nAllocating 16KB\n");
     void* block1 = allocate(allocator, 16 * 1024);
@@ -644,6 +652,10 @@ int main() {
     for (int i = 0; i < 12; i++){
         void* block3 = allocate(allocator, 64 * 1024);
     }
+
+    printf("\nAllocating 4KB\n");
+    void* block6 = allocate(allocator, 4 * 1024);
+
     print_tree(allocator -> root, 0);
     printf("\nAllocating 8KB\n");
     void* block2 = allocate(allocator, 8 * 1024);
